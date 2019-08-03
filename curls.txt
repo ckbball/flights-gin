@@ -1,0 +1,9 @@
+curl --request POST --header "Content-Type: application/json" --write-out "%{http_code}\n" --data '{"flight": {"departureCity": "Austin", "arrivalCity": "New York", "airline": "Southwest", "airlineID": 1, "departAt": "2009-01-13:04:02.999Z", "arriveAt": "2009-01-13:08:15.999Z"}}' http://localhost:8080/api/flights/add
+
+
+curl --request POST --header "Content-Type: application/json" --write-out "%{http_code}\n" --data '{"flight": {"departureCity": "San Francisco", "arrivalCity": "New York", "airline": "American", "airlineID": 2, "departAt": "2009-01-14:04:02.999Z", "arriveAt": "2009-01-14:08:15.999Z"}}' http://localhost:8080/api/flights/add
+
+
+curl --request POST --header "Content-Type: application/json" --write-out "%{http_code}\n" --data '{"flight": {"departureCity": "Seattle", "arrivalCity": "Phoenix", "airline": "American", "airlineID": 2, "departAt": "2009-01-16:04:02.999Z", "arriveAt": "2009-01-16:08:15.999Z"}}' http://localhost:8080/api/flights/add
+
+curl --request GET --header "Content-Type: application/json" --write-out "%{http_code}\n" http://localhost:8080/api/flights

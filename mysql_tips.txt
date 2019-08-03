@@ -1,0 +1,1 @@
+In the db connection string the dbname must == the schema name in the mysql workbench. You must also make sure that the user you are using has the correct permissions to use that schema.
