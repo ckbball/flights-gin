@@ -1,13 +1,9 @@
 package flights
 
 import (
-  //"errors"
+  "database/sql"
   "fmt"
   "github.com/ckbball/flight-gin/common"
-  //"github.com/gin-gonic/gin/binding"
-  "database/sql"
-  //"strconv"
-  //"time"
 )
 
 type FlightModel struct {
@@ -19,17 +15,6 @@ type FlightModel struct {
   DepartAt      string `json:"departtime"`
   ArriveAt      string `json:"arriveat"`
 }
-
-/*
-func GetFlightsByAirline(id uint) ([]FlightModel, error) {
-
-  db := common.GetDB()
-  flights := make([]FlightModel, 0)
-  tx := db.Begin()
-  tx.Where("ID = ?", id).Find(flights)
-  err := tx.Commit().Error
-  return flights, err
-}*/
 
 // -------- HELPER FUNCTIONS BEGIN --------------------------------------
 
@@ -155,6 +140,10 @@ func GetFlight(id int) (*FlightModel, error) {
     return nil, fmt.Errorf("ERROR --> mysql: could not read row: %v", err)
   }
   return flight, nil
+}
+
+func FilteredFlights(dc string, ac string, da string) ([]*FlightModel, error) {
+
 }
 
 // ----------------- DB FUNCTIONS END ------------------------------

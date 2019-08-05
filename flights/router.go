@@ -14,9 +14,27 @@ func FlightsRegister(router *gin.RouterGroup) {
   router.POST("/add", FlightCreate)
   router.GET("/:id", FlightGet)
   router.GET("", FlightsGetAll)
+  router.Get("/", FlightsFiltered)
 }
 
 // ---------------------- ROUTER FUNCTIONS ----------------------------
+
+func FlightsFiltered(c *gin.Context) {
+  departurecity := c.Query("dc")
+  arrivalcity := c.Query("ac")
+  departat := c.Query("da")
+
+  f, err := FilteredFlights(departurecity, arrivalcity, departat)
+  if err != nil {
+    c.JSON(http.StatusUnprocessableEntity, common.NewError("database", err))
+  }
+  fmt.Println("flights matching query: %v, %v, %v from FlightsFiltered router.go", departurecity, arrivalcity, departat)
+  fmt.Println(f)
+
+  serializer := FlightsSerializer{c, f}
+  c.JSON(http.StatusOK, gin.H{"flights", serializer.Response()})
+
+}
 
 func FlightGet(c *gin.Context) {
   id := c.Param("id")
