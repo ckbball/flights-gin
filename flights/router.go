@@ -7,17 +7,30 @@ import (
   "github.com/ckbball/flight-gin/common"
   "github.com/gin-gonic/gin"
   "net/http"
-  //"strconv"
+  "strconv"
 )
 
 func FlightsRegister(router *gin.RouterGroup) {
   router.POST("/add", FlightCreate)
-  //router.GET("/flights/:id", FlightsGet)
+  router.GET("/:id", FlightGet)
   router.GET("", FlightsGetAll)
 }
 
-func FlightGet(c *gin.Context) {
+// ---------------------- ROUTER FUNCTIONS ----------------------------
 
+func FlightGet(c *gin.Context) {
+  id := c.Param("id")
+  Id, err := strconv.Atoi(id)
+
+  f, err := GetFlight(Id)
+  if err != nil {
+    c.JSON(http.StatusUnprocessableEntity, common.NewError("database", err))
+  }
+  fmt.Println("flight of id: %v from FlightGet router.go", f.ID)
+  fmt.Println(*f)
+
+  serializer := FlightSerializer{c, *f}
+  c.JSON(http.StatusOK, gin.H{"flight": serializer.Response()})
 }
 
 func FlightsGetAll(c *gin.Context) {

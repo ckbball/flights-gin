@@ -46,7 +46,37 @@ func FlightValidatorToModel(newFlight FlightModelValidator) (FlightModel, error)
   return f, nil
 }
 
-func scanFlight(s *sql.Rows) (*FlightModel, error) {
+func scanFlights(s *sql.Rows) (*FlightModel, error) {
+  var (
+    ID            int
+    DepartureCity sql.NullString
+    ArrivalCity   sql.NullString
+    Airline       sql.NullString
+    AirlineID     uint
+    DepartAt      sql.NullString
+    ArriveAt      sql.NullString
+  )
+
+  if err := s.Scan(&ID, &DepartureCity, &ArrivalCity, &Airline, &AirlineID, &DepartAt, &ArriveAt); err != nil {
+    return nil, err
+  }
+
+  id := int(ID)
+
+  flight := &FlightModel{
+    ID:            id,
+    DepartureCity: DepartureCity.String,
+    ArrivalCity:   ArrivalCity.String,
+    Airline:       Airline.String,
+    AirlineID:     AirlineID,
+    DepartAt:      DepartAt.String,
+    ArriveAt:      ArriveAt.String,
+  }
+
+  return flight, nil
+}
+
+func scanFlight(s *sql.Row) (*FlightModel, error) {
   var (
     ID            int
     DepartureCity sql.NullString
@@ -90,7 +120,7 @@ func GetAllFlights() ([]*FlightModel, error) {
 
   var flights []*FlightModel
   for rows.Next() {
-    flight, err := scanFlight(rows)
+    flight, err := scanFlights(rows)
     if err != nil {
       return nil, fmt.Errorf("ERROR --> mysql: could not read row: %v", err)
     }
@@ -112,6 +142,19 @@ func SaveFlight(f FlightModel) error {
   fmt.Println("Insert flight result: %v", r)
 
   return nil
+}
+
+func GetFlight(id int) (*FlightModel, error) {
+  row, err := common.GetRow("flights", id)
+  if err != nil {
+    return nil, err
+  }
+
+  flight, err := scanFlight(row)
+  if err != nil {
+    return nil, fmt.Errorf("ERROR --> mysql: could not read row: %v", err)
+  }
+  return flight, nil
 }
 
 // ----------------- DB FUNCTIONS END ------------------------------

@@ -12,6 +12,7 @@ type Database struct {
   insert *sql.Stmt
   list   *sql.Stmt
   listBy *sql.Stmt
+  get    *sql.Stmt
 }
 
 var dbHandle *Database
@@ -32,6 +33,8 @@ func ExecAffectingOneRow(stmt string, args ...interface{}) (sql.Result, error) {
   return r1, nil
 }
 
+// GetRows - takes the table to get rows from and the args for the query
+
 const listFlightsStatement = `SELECT * FROM flights ORDER BY airline`
 
 func GetRows(table string, args ...interface{}) (*sql.Rows, error) {
@@ -40,6 +43,14 @@ func GetRows(table string, args ...interface{}) (*sql.Rows, error) {
   }
 
   return dbHandle.list.Query()
+}
+
+// GetRow - takes an id and gets the row that corresponds to the id
+
+const getStatement = `SELECT * FROM flights WHERE id = ?`
+
+func GetRow(table string, id int) (*sql.Row, error) {
+  return dbHandle.get.QueryRow(id), nil
 }
 
 // -------------- BEGINNING OF DB INITIALIZATION AND SHUT DOWN -------------------
@@ -62,11 +73,18 @@ func Init() (*Database, error) {
   }
 
   // Prepared statements
+
+  // Register the insert statement for flights
   if DB.insert, err = db.Prepare(insertFlightStatement); err != nil {
     return nil, fmt.Errorf("ERROR --> mysql: prepare insert flight: %v", err)
   }
+  // Register the list statement for flights
   if DB.list, err = db.Prepare(listFlightsStatement); err != nil {
     return nil, fmt.Errorf("ERROR --> mysql: prepare list flights: %v", err)
+  }
+  // Register the get by id statement for flights
+  if DB.get, err = db.Prepare(getStatement); err != nil {
+    return nil, fmt.Errorf("ERROR --> mysql: prepare get flight: %v", err)
   }
   dbHandle = DB
   return dbHandle, nil
