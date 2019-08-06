@@ -8,13 +8,15 @@ import (
   "github.com/gin-gonic/gin"
   "net/http"
   "strconv"
+  "strings"
+  "unicode"
 )
 
 func FlightsRegister(router *gin.RouterGroup) {
   router.POST("/add", FlightCreate)
   router.GET("/:id", FlightGet)
   router.GET("", FlightsGetAll)
-  router.Get("/", FlightsFiltered)
+  router.GET("/", FlightsFiltered)
 }
 
 // ---------------------- ROUTER FUNCTIONS ----------------------------
@@ -32,7 +34,7 @@ func FlightsFiltered(c *gin.Context) {
   fmt.Println(f)
 
   serializer := FlightsSerializer{c, f}
-  c.JSON(http.StatusOK, gin.H{"flights", serializer.Response()})
+  c.JSON(http.StatusOK, gin.H{"flights": serializer.Response()})
 
 }
 
@@ -71,7 +73,9 @@ func FlightCreate(c *gin.Context) {
   fmt.Println("Req body")
   fmt.Println(v.Flight.DepartureCity)
 
-  flight, _ := FlightValidatorToModel(v)
+  vs := removeSpace(v)
+
+  flight, _ := FlightValidatorToModel(vs)
 
   if err := SaveFlight(flight); err != nil {
     c.JSON(http.StatusUnprocessableEntity, common.NewError("database", err))
@@ -80,4 +84,20 @@ func FlightCreate(c *gin.Context) {
 
   serializer := FlightSerializer{c, flight}
   c.JSON(http.StatusCreated, gin.H{"flight": serializer.Response()})
+}
+
+func removeSpace(v FlightModelValidator) FlightModelValidator {
+  v.Flight.DepartureCity = stripSpaces(v.Flight.DepartureCity)
+  v.Flight.ArrivalCity = stripSpaces(v.Flight.ArrivalCity)
+  v.Flight.Airline = stripSpaces(v.Flight.Airline)
+  return v
+}
+
+func stripSpaces(str string) string {
+  return strings.Map(func(r rune) rune {
+    if unicode.IsSpace(r) {
+      return -1
+    }
+    return r
+  }, str)
 }

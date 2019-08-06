@@ -13,6 +13,7 @@ type Database struct {
   list   *sql.Stmt
   listBy *sql.Stmt
   get    *sql.Stmt
+  filter *sql.Stmt
 }
 
 var dbHandle *Database
@@ -31,6 +32,13 @@ func ExecAffectingOneRow(stmt string, args ...interface{}) (sql.Result, error) {
   }
 
   return r1, nil
+}
+
+const filterFlightStatement = `
+  SELECT * FROM flights WHERE departurecity=? and arrivalcity=? and departat=?`
+
+func FilterRows(table string, dc string, ac string, da string) (*sql.Rows, error) {
+  return dbHandle.filter.Query(dc, ac, da)
 }
 
 // GetRows - takes the table to get rows from and the args for the query
@@ -85,6 +93,10 @@ func Init() (*Database, error) {
   // Register the get by id statement for flights
   if DB.get, err = db.Prepare(getStatement); err != nil {
     return nil, fmt.Errorf("ERROR --> mysql: prepare get flight: %v", err)
+  }
+  // Register the filter statement for flights
+  if DB.filter, err = db.Prepare(filterFlightStatement); err != nil {
+    return nil, fmt.Errorf("ERROR --> mysql: prepare filter flights: %v", err)
   }
   dbHandle = DB
   return dbHandle, nil

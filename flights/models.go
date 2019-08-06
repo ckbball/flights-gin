@@ -143,7 +143,24 @@ func GetFlight(id int) (*FlightModel, error) {
 }
 
 func FilteredFlights(dc string, ac string, da string) ([]*FlightModel, error) {
+  rows, err := common.FilterRows("flights", dc, ac, da)
+  if err != nil {
+    return nil, err
+  }
 
+  defer rows.Close()
+
+  var flights []*FlightModel
+  for rows.Next() {
+    flight, err := scanFlights(rows)
+    if err != nil {
+      return nil, fmt.Errorf("ERROR --> mysql: could not read row: %v", err)
+    }
+
+    flights = append(flights, flight)
+  }
+
+  return flights, nil
 }
 
 // ----------------- DB FUNCTIONS END ------------------------------
